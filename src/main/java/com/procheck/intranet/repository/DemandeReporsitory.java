@@ -20,6 +20,7 @@ public interface DemandeReporsitory extends JpaRepository<PKDemande, UUID>,JpaSp
 	List<PKDemande> findByCodeSupAndTypedemande_id(UUID idSuper,UUID idTypeDemande);
 
 	List<PKDemande> findByCodeSup(UUID codeSup);
+	List<PKDemande> findAllByCodeSup(UUID codeSup);
 
 	
 	

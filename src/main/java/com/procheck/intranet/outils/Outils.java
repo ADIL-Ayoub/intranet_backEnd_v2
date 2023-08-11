@@ -12,7 +12,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -25,12 +24,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.hibernate.annotations.SelectBeforeUpdate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.support.PagedListHolder;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.multipart.MultipartFile;
@@ -52,12 +45,10 @@ import com.procheck.intranet.models.PKHoraire;
 import com.procheck.intranet.models.PKJoureFerie;
 import com.procheck.intranet.models.PKPersonnel;
 import com.procheck.intranet.models.PKProjetTimesheet;
-import com.procheck.intranet.models.PKService;
 import com.procheck.intranet.models.PKTimesheet;
 import com.procheck.intranet.payload.request.DemiHoraire;
 import com.procheck.intranet.payload.request.DetailTypeConge;
 import com.procheck.intranet.payload.request.GenerationTs;
-import com.procheck.intranet.payload.request.Horaire;
 import com.procheck.intranet.payload.request.InfosPersonne;
 import com.procheck.intranet.payload.request.JourFerie;
 import com.procheck.intranet.payload.request.JourTravail;
@@ -66,14 +57,8 @@ import com.procheck.intranet.payload.request.MesDocuments;
 import com.procheck.intranet.payload.request.Timesheet;
 import com.procheck.intranet.payload.request.TimsheetByProjet;
 import com.procheck.intranet.payload.request.TypeConge;
-import com.procheck.intranet.repository.ServiceReporsitory;
-import com.procheck.intranet.security.services.IUserDetailsService;
-import com.procheck.intranet.services.IPersonnelService;
-import com.procheck.intranet.services.impl.PersonnelServiceImpl;
 
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
-import net.bytebuddy.asm.Advice.Local;
 
 @Slf4j
 public class Outils {
@@ -243,8 +228,8 @@ public class Outils {
 
 	public static List<LocalDate> getDatesBetweenConge(String dateD, String dateF) {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-		LocalDate startDate = LocalDate.parse(dateD, formatter);
-		LocalDate endDate = LocalDate.parse(dateF, formatter);
+		LocalDate startDate = LocalDate.parse(dateD, formatter).plusDays(1);
+		LocalDate endDate = LocalDate.parse(dateF, formatter).plusDays(1);
 		long numOfDaysBetween = ChronoUnit.DAYS.between(startDate, endDate);
 		return IntStream.iterate(0, i -> i + 1).limit(numOfDaysBetween).mapToObj(i -> startDate.plusDays(i))
 				.collect(Collectors.toList());
@@ -331,8 +316,8 @@ public class Outils {
 
 		Timesheet time = new Timesheet();
 		time.setIdPersonnel(personnel.getId());
-		time.setNom(personnel.getSNom());
-		time.setPrenom(personnel.getSPrenom());
+		time.setNom(personnel.getNom());
+		time.setPrenom(personnel.getPrenom());
 		time.setCin(personnel.getCin());
 		time.setPoste(personnel.getSPoste());
 		time.setMatrucule(personnel.getSMatruculePaie());
@@ -420,8 +405,8 @@ public class Outils {
 
 		Timesheet time = new Timesheet();
 		time.setIdPersonnel(personnel.getId());
-		time.setNom(personnel.getSNom());
-		time.setPrenom(personnel.getSPrenom());
+		time.setNom(personnel.getNom());
+		time.setPrenom(personnel.getPrenom());
 		time.setCin(personnel.getCin());
 		time.setPoste(personnel.getSPoste());
 		time.setMatrucule(personnel.getSMatruculePaie());
@@ -609,7 +594,7 @@ public class Outils {
 
 			PdfPTable table = new PdfPTable(2);
 			Paragraph left = new Paragraph(
-					fistTimesheet.getPersonnel().getSNom().toUpperCase() + " " + fistTimesheet.getPersonnel().getSPrenom());
+					fistTimesheet.getPersonnel().getNom().toUpperCase() + " " + fistTimesheet.getPersonnel().getPrenom());
 			PdfPCell cell = new PdfPCell();
 			cell.setPadding(0);
 			cell.setBorder(0);
@@ -630,8 +615,8 @@ public class Outils {
 			cell.addElement(right);
 			table.addCell(cell);
 			document.add(table);
-			contantQRcode += fistTimesheet.getPersonnel().getSNom().toUpperCase() + " "
-					+ fistTimesheet.getPersonnel().getSPrenom();
+			contantQRcode += fistTimesheet.getPersonnel().getNom().toUpperCase() + " "
+					+ fistTimesheet.getPersonnel().getPrenom();
 			contantQRcode += "\n";
 			contantQRcode += "Du " + fistTimesheet.getDateTimesheet() + " Au "
 					+ lastTimesheet.getDateTimesheet();
@@ -837,8 +822,8 @@ public class Outils {
 			//
 			conge.setDateDemande(demande.getDDateCreation().format(dateTimeFormatter));
 			conge.setIdPersonnel(demande.getPersonnel().getId());
-			conge.setNom(demande.getPersonnel().getSNom());
-			conge.setPrenom(demande.getPersonnel().getSPrenom());
+			conge.setNom(demande.getPersonnel().getNom());
+			conge.setPrenom(demande.getPersonnel().getPrenom());
 			for (PKConge c : demande.getConges()) {
 //				conge.setIdConge(c.getId());
 				conge.setTypeConge(c.getTypeConge().getTypeConge());

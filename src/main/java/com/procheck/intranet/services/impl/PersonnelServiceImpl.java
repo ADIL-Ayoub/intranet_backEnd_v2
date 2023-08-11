@@ -287,5 +287,16 @@ public class PersonnelServiceImpl implements IPersonnelService {
 		
 	}
 
+	@Override
+	public List<PKPersonnel> findPersonnelByCodeSuperieur(UUID codeSuperieur) {
+		log.info("[ PERSONNEL SERVICE ] ~ [ FIND PERSONNELS BY CODE SUPERIEUR]");
+		return personnelReporsitory.findBySuperieur(codeSuperieur);
+	}
+
+	@Override
+	public List<PKPersonnel> findPersonnelByCodeSuperieurAndCINOrNomOrPrenom(UUID codeSuperieur,String search) {
+		log.info("[ PERSONNEL SERVICE ] ~ [ FIND PERSONNELS BY CODE SUPERIEUR]");
+		return personnelReporsitory.findBySuperieurAndNomOrPrenomOrCin(codeSuperieur,search,search,search);
+	}
 
 }

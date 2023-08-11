@@ -61,6 +61,10 @@ public interface IPersonnelService {
 	List<PKPersonnel> findPersonnelByServicesAndFilter(PersonnelFilterByService personnel);
 	
 	void updateEmployee(UUID idPersonne,UUID idSuper);
+	List<PKPersonnel> findPersonnelByCodeSuperieur(UUID codeSuperieur);
+
+	List<PKPersonnel> findPersonnelByCodeSuperieurAndCINOrNomOrPrenom(UUID codeSuperieur,String search);
+
 	
 	
 	

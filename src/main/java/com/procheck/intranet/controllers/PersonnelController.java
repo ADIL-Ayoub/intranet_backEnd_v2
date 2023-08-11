@@ -6,8 +6,11 @@ import java.util.UUID;
 
 import javax.validation.Valid;
 
+import com.procheck.intranet.payload.request.MesConges;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.support.PagedListHolder;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -430,7 +433,38 @@ public class PersonnelController {
 		}
 
 	}
-	
-	
+
+	//Mon code
+	@GetMapping("superieur/{id}")
+	@PreAuthorize("hasRole('afficher_emp_by_sup')")
+	public ResponseEntity<?> getPersonnelsByCodeSuperviseur(@PathVariable("id") UUID id,@RequestParam(value = "page", defaultValue = "0") int page,
+															@RequestParam(value="size",defaultValue = "10") int size,
+															@RequestParam(value="search",defaultValue = "") String search
+															) {
+
+		log.info("[ PERSONNEL CONTROLLER ] ~ [ GET PERSONNELS BY CODE SUPERIEUR ]");
+		try {
+			if (userService.findOne(id)==null) {
+				return ResponseEntity.badRequest().body(new MessageResponse("Error: Not found personnel with id user !"));
+			}
+			//List<PKPersonnel> personnels = personnelService.findPersonnelByCodeSuperieur(userService.findOne(id).getPersonnel().getId());
+			List<PKPersonnel> personnels = personnelService.findPersonnelByCodeSuperieurAndCINOrNomOrPrenom(userService.findOne(id).getPersonnel().getId(),search);
+			PagedListHolder<PKPersonnel> listHolder = new PagedListHolder<PKPersonnel>(personnels);
+
+			listHolder.setPageSize(size);
+			listHolder.setPage(page);
+
+			Page<PKPersonnel> pages = new PageImpl<PKPersonnel>(listHolder.getPageList(),
+					PageRequest.of(listHolder.getPage(), listHolder.getPageSize()), personnels.size());
+			return new ResponseEntity<>(pages, HttpStatus.OK);
+
+			//return new ResponseEntity<>(personnels, HttpStatus.OK);
+
+		} catch (Exception ex) {
+			log.error("ERROR : ", ex.getMessage());
+			return new ResponseEntity<>("ERROR : " + ex.getMessage(), HttpStatus.NOT_FOUND);
+
+		}
+	}
 	
 }

@@ -19,16 +19,14 @@ import javax.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 
 @Entity
 @Table(name = "t_service", schema = "public")
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @Data @AllArgsConstructor @NoArgsConstructor
+@ToString
 public class PKService extends BaseEntity {
 	
     @Column(name = "s_code_service")

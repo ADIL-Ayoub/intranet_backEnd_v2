@@ -2,10 +2,12 @@ package com.procheck.intranet.controllers;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import javax.validation.Valid;
 
+import com.procheck.intranet.services.specifications.MailSenderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.support.PagedListHolder;
 import org.springframework.data.domain.Page;
@@ -108,6 +110,9 @@ public class DemandeController {
 	@Autowired
 	ITypeDemandeService typeDemandeService;
 
+	@Autowired
+	MailSenderService mailSenderService;
+
 /*
 	@PostMapping("/add/{idUser}")
 	@PreAuthorize("hasRole('add_demande_conge')")
@@ -205,8 +210,8 @@ public class DemandeController {
 			//System.out.println(conge);
 
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-			LocalDate startDate = LocalDate.parse(conge.getDateDebut().substring(0,10), formatter);
-			LocalDate finDate = LocalDate.parse(conge.getDateReprise().substring(0,10), formatter);
+			LocalDate startDate = LocalDate.parse(conge.getDateDebut().substring(0,10), formatter).plusDays(1);
+			LocalDate finDate = LocalDate.parse(conge.getDateReprise().substring(0,10), formatter).plusDays(1);
 			PKUser user = userService.findOne(idUser);
 			PKPersonnel employee = user.getPersonnel();
 			//ihistoriqueService.SaveHistorique(idUser," Ajouter demande congé "+employee.getSNom());
@@ -483,7 +488,7 @@ public class DemandeController {
 			dconge.setDemande(demande);
 			congeService.save(dconge);
 
-			demande.setStatus("en cours");
+			demande.setStatus("envoyé pour validation");
 			demandeSevice.save(demande);
 			employee.setFNbJourConge(employee.getFNbJourConge() - daysConge.size());
 			personnelService.save(employee);
@@ -773,11 +778,13 @@ public class DemandeController {
 				congeService.save(mesConges);
 			}
 			conge.setStatus("envoyé");
-			demande.setStatus("en cours");
+			demande.setStatus("envoyé pour validation");
 			demandeSevice.save(demande);
 			employee.setFNbJourConge(employee.getFNbJourConge() - daysConge.size());
 			personnelService.save(employee);
-
+			mailSenderService.sendEmail(personnelService.findPersonnelById(employee.getSuperieur()).getSEmail(),
+					"Validation d'une demande de congé ",
+					"Bonjour, cet mail vous a été envoyé automatiquement pour vous informer que vous avez une demande à valider.\nPrière de ne pas répondre à cet email automatique, votre réponse ne sera pas lue.\n\nCordialement. ");
 			return new ResponseEntity<>(conge, HttpStatus.OK);
 
 		} catch (Exception ex) {
@@ -790,7 +797,7 @@ public class DemandeController {
 	@PutMapping("/annule/{idUser}")
 	@PreAuthorize("hasRole('annule_demande_conge')")
 	public ResponseEntity<?> annuleConge(@PathVariable("idUser") UUID idUser, @RequestBody MesConges conge) {
-		log.info("[ DEMANDE CONTROLLER ] ~ [ ENVOYER LES DEMANDES  ]");
+		log.info("[ DEMANDE CONTROLLER ] ~ [ ANNULER LES DEMANDES  ]");
 		try {
 			if (!userRepository.existsById(idUser)) {
 
@@ -885,7 +892,7 @@ public class DemandeController {
 			for (PKConge cng : demande.getConges()) {
 
 				cng.setDateDebut(startDate);
-				cng.setDateReprise(finDate);
+				cng.setDateReprise(finDate.plusDays(1));
 				cng.setTypeConge(typeConge);
 				cng.setNombreJour(daysConge.size());
 
@@ -1069,10 +1076,11 @@ public ResponseEntity<?> findMesDemande(@PathVariable("idUser") UUID idUser,
 
 			}
 			PKDemande d = demandeSevice.findDemandeById(demande.getIdDemande());
-
+			String emailAdress=d.getPersonnel().getSEmail();
+			//System.out.println(emailAdress);
 			if (demande.getStatus().equals("validé")) {
 
-				if (d.getStatus().equals("en cours")) {
+				if (d.getStatus().equals("envoyé pour validation")) {
 
 					d.setStatus("validé");
 					d.setCodeSup(userService.findOne(idUser).getPersonnel().getId());
@@ -1083,6 +1091,29 @@ public ResponseEntity<?> findMesDemande(@PathVariable("idUser") UUID idUser,
 						congeService.save(conge);
 					}
 					demandeSevice.save(d);
+					mailSenderService.sendEmail(emailAdress,
+							"Concernant votre demande de congé ",
+							"Bonjour, cet mail  vous a été envoyé automatiquement pour vous informer que votre demande en ligne sur PROCHECK a eu des réponses.\nPrière de ne pas répondre à cet email automatique, votre réponse ne sera pas lue.\n\nCordialement. ");
+					return ResponseEntity.ok(new MessageResponse("La demande est validé"));
+
+				}else if (d.getStatus().equals("refusé")) {
+
+					d.setStatus("validé");
+					d.setCodeSup(userService.findOne(idUser).getPersonnel().getId());
+					d.setDDateDecisionSup(LocalDate.now());
+					d.setDecisionSup(userService.findOne(idUser).getUsername());
+					for (PKConge conge : d.getConges()) {
+						conge.setStatus("validé");
+						congeService.save(conge);
+						PKPersonnel personnel=personnelService.findPersonnelById(d.getPersonnel().getId());
+						personnel.setFNbJourConge(personnel.getFNbJourConge() - conge.getNombreJour() );
+						personnelService.save(personnel);
+					}
+					demandeSevice.save(d);
+					mailSenderService.sendEmail(emailAdress,
+							"Concernant votre demande de congé ",
+							"Bonjour, cet mail  vous a été envoyé automatiquement pour vous informer que votre demande en ligne sur PROCHECK a eu des réponses.\nPrière de ne pas répondre à cet email automatique, votre réponse ne sera pas lue.\n\nCordialement. ");
+					return ResponseEntity.ok(new MessageResponse("La demande est validé"));
 
 				} else if (d.getStatus().equals("demande modifier")) {
 
@@ -1097,11 +1128,15 @@ public ResponseEntity<?> findMesDemande(@PathVariable("idUser") UUID idUser,
 						personnelService.save(personnel);
 					}
 					demandeSevice.save(d);
+					mailSenderService.sendEmail(emailAdress,
+							"Concernant votre demande de congé ",
+							"Bonjour, cet mail  vous a été envoyé automatiquement pour vous informer que votre demande en ligne sur PROCHECK a eu des réponses.\nPrière de ne pas répondre à cet email automatique, votre réponse ne sera pas lue.\n\nCordialement. ");
+					return ResponseEntity.ok(new MessageResponse("La demande est enregistrée"));
 				}
 			}
-			if (demande.getStatus().equals("refusé")) {
+			else if (demande.getStatus().equals("refusé")) {
 
-				if (d.getStatus().equals("en cours")) {
+				if (d.getStatus().equals("envoyé pour validation")) {
 
 					d.setStatus("refusé");
 					d.setCodeSup(userService.findOne(idUser).getPersonnel().getId());
@@ -1115,6 +1150,29 @@ public ResponseEntity<?> findMesDemande(@PathVariable("idUser") UUID idUser,
 						personnelService.save(personnel);
 					}
 					demandeSevice.save(d);
+					mailSenderService.sendEmail(emailAdress,
+							"Concernant votre demande de congé ",
+							"Bonjour, cet mail  vous a été envoyé automatiquement pour vous informer que votre demande en ligne sur PROCHECK a eu des réponses.\nPrière de ne pas répondre à cet email automatique, votre réponse ne sera pas lue.\n\nCordialement. ");
+
+					return ResponseEntity.ok(new MessageResponse("La demande est refusé"));
+
+				}else if (d.getStatus().equals("validé")) {
+
+					d.setStatus("refusé");
+					d.setCodeSup(userService.findOne(idUser).getPersonnel().getId());
+					d.setDDateDecisionSup(LocalDate.now());
+					d.setDecisionSup(userService.findOne(idUser).getUsername());
+					for (PKConge conge : d.getConges()) {
+						conge.setStatus("refusé");
+						congeService.save(conge);
+						PKPersonnel personnel=personnelService.findPersonnelById(d.getPersonnel().getId());
+						personnel.setFNbJourConge(personnel.getFNbJourConge() + conge.getNombreJour() );
+					}
+					demandeSevice.save(d);
+					mailSenderService.sendEmail(emailAdress,
+							"Concernant votre demande de congé ",
+							"Bonjour, cet mail  vous a été envoyé automatiquement pour vous informer que votre demande en ligne sur PROCHECK a eu des réponses.\nPrière de ne pas répondre à cet email automatique, votre réponse ne sera pas lue.\n\nCordialement. ");
+					return ResponseEntity.ok(new MessageResponse("La demande est refusé"));
 
 				} else if (d.getStatus().equals("demande modifier")) {
 
@@ -1127,10 +1185,60 @@ public ResponseEntity<?> findMesDemande(@PathVariable("idUser") UUID idUser,
 						congeService.save(conge);
 					}
 					demandeSevice.save(d);
+					mailSenderService.sendEmail(emailAdress,
+							"Concernant votre demande de congé ",
+							"Bonjour, cet mail  vous a été envoyé automatiquement pour vous informer que votre demande en ligne sur PROCHECK a eu des réponses.\nPrière de ne pas répondre à cet email automatique, votre réponse ne sera pas lue.\n\nCordialement. ");
+
+					return ResponseEntity.ok(new MessageResponse("La demande est refusé"));
+
+				}
+
+			}
+			else if (demande.getStatus().equals("accepté")) {
+
+				if (d.getStatus().equals("demande annulation")) {
+
+					d.setStatus("annulé");
+					d.setCodeSup(userService.findOne(idUser).getPersonnel().getId());
+					d.setDDateDecisionSup(LocalDate.now());
+					d.setDecisionSup(userService.findOne(idUser).getUsername());
+					for (PKConge conge : d.getConges()) {
+						conge.setStatus("annulé");
+						PKPersonnel personnel=personnelService.findPersonnelById(d.getPersonnel().getId());
+						personnel.setFNbJourConge(personnel.getFNbJourConge() + conge.getNombreJour() );
+						personnelService.save(personnel);
+						congeService.save(conge);
+					}
+					demandeSevice.save(d);
+					mailSenderService.sendEmail(emailAdress,
+							"Concernant votre demande d' annulation de congé ",
+							"Bonjour, cet mail  vous a été envoyé automatiquement pour vous informer que votre demande en ligne sur PROCHECK a eu des réponses.\nPrière de ne pas répondre à cet email automatique, votre réponse ne sera pas lue.\n\nCordialement. ");
+					return ResponseEntity.ok(new MessageResponse("La demande d' annulation est accéptée."));
+
+				}
+			}
+			else if (demande.getStatus().equals("rejeté")) {
+
+				if (d.getStatus().equals("demande annulation")) {
+
+					d.setStatus("validé après demande annulation");
+					d.setCodeSup(userService.findOne(idUser).getPersonnel().getId());
+					d.setDDateDecisionSup(LocalDate.now());
+					d.setDecisionSup(userService.findOne(idUser).getUsername());
+					for (PKConge conge : d.getConges()) {
+						conge.setStatus("validé après demande annulation");
+						congeService.save(conge);
+					}
+					demandeSevice.save(d);
+					mailSenderService.sendEmail(emailAdress,
+							"Concernant votre demande d' annulation de congé ",
+							"Bonjour, cet mail  vous a été envoyé automatiquement pour vous informer que votre demande en ligne sur PROCHECK a eu des réponses.\nPrière de ne pas répondre à cet email automatique, votre réponse ne sera pas lue.\n\nCordialement. ");
+					return ResponseEntity.ok(new MessageResponse("La demande d' annulation est rejetée."));
+
 				}
 			}
 
-			return ResponseEntity.badRequest().body(new MessageResponse(" la decision sont bien enregistré !! "));
+			return ResponseEntity.badRequest().body(new MessageResponse(" la decision n'est pas enregistrée !! "));
 
 		} catch (Exception ex) {
 			log.error("ERROR : ", ex.getMessage());
@@ -1218,6 +1326,7 @@ public ResponseEntity<?> findMesDemande(@PathVariable("idUser") UUID idUser,
 	//mon code
 
 	@GetMapping("/typeDemande/{codeTypeDemande}")
+	@PreAuthorize("hasRole('get_type_demande')")
 	// privilège à ajouter
 	public ResponseEntity<?> findTypeDemandeByCodeTypeDemande(@PathVariable(name = "codeTypeDemande") String codeTypeDemande){
 		try {
@@ -1231,6 +1340,7 @@ public ResponseEntity<?> findMesDemande(@PathVariable("idUser") UUID idUser,
 
 	//get Mesconges from idDemande
 	@GetMapping("/{idDemande}")
+	@PreAuthorize("hasRole('find_demande_conge')")
 	public ResponseEntity<?> getDemande(@PathVariable(value="idDemande") UUID idDemande ,
 										@RequestParam(defaultValue = "0") int page,
 										@RequestParam(defaultValue = "10") int size) {
@@ -1253,4 +1363,200 @@ public ResponseEntity<?> findMesDemande(@PathVariable("idUser") UUID idUser,
 			return new ResponseEntity<>("Demande introuvable",HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+
+	@GetMapping("/demandes/byCodeSup/{codeSup}")
+	@PreAuthorize("hasRole('demande_conge_by_superieur')")
+	public ResponseEntity<?> getDemandeByCodeSup(@PathVariable(value="codeSup") UUID codeSup ,
+												 @RequestParam(value="idTypeDmd") UUID idTypeDmd,
+										@RequestParam(defaultValue = "0") int page,
+										@RequestParam(defaultValue = "10") int size,
+										@RequestParam (defaultValue = "true") boolean sort) {
+
+		try {
+			List<PKDemande> demandes = demandeSevice.findByCodeSup(userService.findOne(codeSup).getPersonnel().getId());
+			if (typeDemandeService.findTypeDemandeById(idTypeDmd).getCodeTypeDemande().equals("DC")) {
+				List<MesConges> conges = Outils.MapDemandeToConges(demandes);
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+				if (sort) {
+					Collections.sort(conges, (c1, c2) -> {
+						LocalDate l1 = LocalDate.parse(c1.dateDemande, formatter);
+						LocalDate l2 = LocalDate.parse(c2.dateDemande, formatter);
+						return l1.compareTo(l2);
+					});
+				} else {
+					Collections.sort(conges, (c1, c2) -> {
+						LocalDate l1 = LocalDate.parse(c1.dateDemande, formatter);
+						LocalDate l2 = LocalDate.parse(c2.dateDemande, formatter);
+						return -l1.compareTo(l2);
+					});
+				}
+
+				PagedListHolder<MesConges> listHolder = new PagedListHolder<MesConges>(conges);
+
+				listHolder.setPageSize(size);
+				listHolder.setPage(page);
+
+				Page<MesConges> pages = new PageImpl<MesConges>(listHolder.getPageList(),
+						PageRequest.of(listHolder.getPage(), listHolder.getPageSize()), conges.size());
+				return new ResponseEntity<>(pages, HttpStatus.OK);
+
+
+			} else if (typeDemandeService.findTypeDemandeById(idTypeDmd).getCodeTypeDemande().equals("DDA")) {
+
+				List<MesDocuments> documents = Outils.MapDemandeToDocument(demandes);
+				PagedListHolder<MesDocuments> listHolder = new PagedListHolder<MesDocuments>(documents);
+
+				listHolder.setPageSize(size);
+				listHolder.setPage(page);
+
+				Page<MesDocuments> pages = new PageImpl<MesDocuments>(listHolder.getPageList(),
+						PageRequest.of(listHolder.getPage(), listHolder.getPageSize()), documents.size());
+				return new ResponseEntity<>(pages, HttpStatus.OK);
+			}
+
+			return ResponseEntity.badRequest().body(new MessageResponse(" aucun demande trouvé !! "));
+		}catch(Exception e){
+			return new ResponseEntity<>("Code superieur introuvable",HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@PostMapping("/addBySuperieur/{idUser}/{idPersonnel}")
+	@PreAuthorize("hasRole('demande_conge_by_superieur')")
+	public ResponseEntity<?> addDemandeBySuperieur(@PathVariable("idUser") UUID idUser,
+												   @PathVariable("idPersonnel") UUID idPersonnel,
+												   @Valid @RequestBody Conge conge){
+		log.info("[ DEMANDE CONTROLLER ] ~ [ CREATE DEMANDE CONGE BY SUPERIEUR ]");
+		try {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+			LocalDate startDate = LocalDate.parse(conge.getDateDebut().substring(0,10), formatter).plusDays(1);
+			LocalDate finDate = LocalDate.parse(conge.getDateReprise().substring(0,10), formatter).plusDays(1);
+			//PKUser user = userService.findOne(idUser);
+			//PKPersonnel employee = user.getPersonnel();
+			PKPersonnel employee= personnelService.findPersonnelById(idPersonnel);
+			//ihistoriqueService.SaveHistorique(idUser," Ajouter demande congé "+employee.getSNom());
+			if (congeReporsitory.existsByDateDebutAndDateRepriseAndDemande_Personnel_id(startDate, finDate,
+					employee.getId())) {
+
+				return ResponseEntity.badRequest().body(new MessageResponse("Error: la demande déja exist !!"));
+			}
+
+			List<LocalDate> days = Outils.getDatesBetweenConge(conge.getDateDebut().substring(0,10), conge.getDateReprise().substring(0,10));
+			List<LocalDate> daysConge = new ArrayList<LocalDate>();
+			if (!(employee.getFNbJourConge() > 0)) {
+
+				return ResponseEntity.badRequest().body(new MessageResponse("Error: pas solde conge !"));
+			}
+			for (LocalDate date : days) {
+
+				if (timesheetReporsitory.existsByDateTimesheetAndPersonnel_id(date, employee.getId())) {
+
+					return ResponseEntity.badRequest().body(
+							new MessageResponse("Error: la date : " + date + " déja exist dans la table TS !"));
+				}
+
+				String str = date.format(DateTimeFormatter.ofPattern("EEEE", Locale.FRENCH));
+				log.info("DAY NAME :" + str);
+				boolean jourferie = jourFerieReporsitory
+						.existsByPays_idAndDateJoureFerie(employee.getPkPays().getId(), date);
+				boolean jourTravail = horaireRepository.existsByJourIgnoreCaseAndSemaineTravails_Id(str,
+						employee.getSemaineTravail().getId());
+				if (!jourferie && jourTravail) {
+					daysConge.add(date);
+				}
+			}
+			if (!(employee.getFNbJourConge() > daysConge.size())) {
+				return ResponseEntity.badRequest().body(new MessageResponse("Error: solde conge "
+						+ employee.getFNbJourConge() + " inferieur nombre jous conge " + daysConge.size()));
+			}
+
+			PKTypeConge typeConge = typeCongeService.findTypeCongeById(conge.getTypeConge());
+			if (!(typeConge.getMax() >= daysConge.size())) {
+				return ResponseEntity.badRequest().body(new MessageResponse("Error: nombre max de conge "
+						+ typeConge.getMax() + " inferieur nombre jous conge " + daysConge.size()));
+			}
+			PKDemande demande = new PKDemande();
+			demande.setDDateCreation(LocalDate.now());
+			demande.setCodeDemandeur(userService.findOne(idUser).getUsername());
+
+			demande.setPersonnel(employee);
+			demande.setStatus("envoyé pour validation");
+			demande.setTypedemande(typeDemandeService.findTypeDemandeById(conge.typeDemande));
+			demande.setCodeSup(userService.findOne(idUser).getPersonnel().getId());
+			PKConge dconge = new PKConge();
+			dconge.setName(conge.getName());
+			dconge.setDescription(conge.getDescription());
+			dconge.setDateDebut(startDate);
+			dconge.setDateReprise(finDate);
+			dconge.setNombreJour(daysConge.size());
+			dconge.setTypeConge(typeConge);
+			dconge.setStatus("envoyé");
+			dconge.setDemande(demande);
+			congeService.save(dconge);
+			mailSenderService.sendEmail(personnelService.findPersonnelById(employee.getSuperieur()).getSEmail(),
+					"Validation d'une demande de congé ",
+					"Bonjour, cet mail vous a été envoyé automatiquement pour vous informer que vous avez une demande à valider.\nPrière de ne pas répondre à cet email automatique, votre réponse ne sera pas lue.\n\nCordialement. ");
+
+
+			return new ResponseEntity<>(new MessageResponse("la demande de congé est bien enregistrée !"),
+					HttpStatus.OK);
+
+		} catch (Exception ex) {
+			log.error(ex.getMessage());
+			return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+	}
+
+	@PutMapping("/demandeAnnulation/{idUser}")
+// privilege
+	public ResponseEntity<?> demandeAnnulation(@PathVariable(name = "idUser") UUID idUser,
+											   @RequestBody MesConges conge
+											   ){
+		log.info("[ DEMANDE CONTROLLER ] ~ [ DEMANDE ANNULATION APRES VALIDATION DES DEMANDES  ]");
+		try {
+			if (!userRepository.existsById(idUser)) {
+
+				return ResponseEntity.badRequest().body(new MessageResponse("Error: user is not exist !"));
+
+			}
+			PKDemande demande = demandeSevice.findDemandeById(conge.getIdDemande());
+			List<PKConge> conge_demande= (List)(demande.getConges());
+			// Calculate the difference in days
+			long daysDifference = ChronoUnit.DAYS.between(LocalDate.now(), conge_demande.get(0).getDateDebut());
+
+			System.out.println("Difference in days: " + daysDifference);
+			if(daysDifference>1){
+				demande.setStatus("demande annulation");
+				demandeSevice.save(demande);
+				mailSenderService.sendEmail(personnelService.findPersonnelById(demande.getPersonnel().getSuperieur()).getSEmail(),
+						"Demande d'annulation d'un congé ",
+						"Bonjour, cet mail vous a été envoyé automatiquement pour vous informer que vous avez une demande d'annulation d'un congé à confirmer.\nPrière de ne pas répondre à cet email automatique, votre réponse ne sera pas lue.\n\nCordialement. ");
+
+				return new ResponseEntity<>(demande, HttpStatus.OK);
+			}else{
+				return ResponseEntity.badRequest().body(new MessageResponse("La demande d'annulation doit être faite 2 jours avant la date de debut du congé"));
+			}
+
+
+
+			//dateDebut.
+			/*for (PKConge mesConges : demande.getConges()) {
+				mesConges.setStatus("annulé");
+				congeService.save(mesConges);
+			}*/
+			//conge.setStatus("demande annulation");
+
+			/*demande.setStatus("demande annulation");
+			demandeSevice.save(demande);*/
+
+			//return new ResponseEntity<>("Demande d'annulation est faite", HttpStatus.OK);
+
+		} catch (Exception ex) {
+			log.error("ERROR : ", ex.getMessage());
+			ex.printStackTrace();
+			return new ResponseEntity<>("ERROR : " + ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+	}
 }
+

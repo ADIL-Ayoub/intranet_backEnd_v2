@@ -28,5 +28,6 @@ public interface IDemandeService {
 	List<PKDemande> findByRespAndTypedemande(UUID idSuper,UUID idTypeDmd);
 	
 	List<PKDemande> getDemandeByFilter(DemandeFilter filter);
+	List<PKDemande> findByCodeSup(UUID codeSup);
 	
 }

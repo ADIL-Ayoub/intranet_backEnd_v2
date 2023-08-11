@@ -35,9 +35,9 @@ public class PKPersonnel extends BaseEntity {
 	@Column(name = "s_societe")
 	private String sSociete;
 	@Column(name = "s_nom")
-	private String sNom;
+	private String nom;
 	@Column(name = "s_prenom")
-	private String sPrenom;
+	private String prenom;
 	@Column(name = "s_civilite")
 	private String sCivilite;
 	@Column(name = "d_date_naissance")
@@ -160,8 +160,8 @@ public class PKPersonnel extends BaseEntity {
 
 	public PKPersonnel(String cin, String nom, String prenom, String poste, boolean affectation) {
 		this.cin = cin;
-		this.sNom = nom;
-		this.sPrenom = prenom;
+		this.nom = nom;
+		this.prenom = prenom;
 		this.sPoste = poste;
 		this.bAffectation = affectation;
 	}
@@ -169,8 +169,8 @@ public class PKPersonnel extends BaseEntity {
 	public PKPersonnel(PKService service,String cin, String nom, String prenom, String matrucule,String post) {
 		this.service=service;
 		this.cin = cin;
-		this.sNom = nom;
-		this.sPrenom = prenom;
+		this.nom = nom;
+		this.prenom = prenom;
 		this.sMatruculePaie = matrucule;
 		this.sPoste=post;
 	}

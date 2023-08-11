@@ -4,11 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -45,12 +41,12 @@ public class PersonnelFilterAll {
 				predicates.add(criteriaBuilder.equal(root.get("cin"), personnel.getCin()));
 			}
 
-			if (personnel.getSNom() != null && !personnel.getSNom().isEmpty()) {
-				predicates.add(criteriaBuilder.equal(root.get("sNom"), personnel.getSNom()));
+			if (personnel.getNom() != null && !personnel.getNom().isEmpty()) {
+				predicates.add(criteriaBuilder.equal(root.get("sNom"), personnel.getNom()));
 			}
 
-			if (personnel.getSPrenom() != null && !personnel.getSPrenom().isEmpty()) {
-				predicates.add(criteriaBuilder.equal(root.get("sPrenom"), personnel.getSPrenom()));
+			if (personnel.getPrenom() != null && !personnel.getPrenom().isEmpty()) {
+				predicates.add(criteriaBuilder.equal(root.get("sPrenom"), personnel.getPrenom()));
 			}
 			if (personnel.getSPoste() != null && !personnel.getSPoste().isEmpty()) {
 				predicates.add(criteriaBuilder.equal(root.get("sPoste"), personnel.getSPoste()));
@@ -78,7 +74,7 @@ public class PersonnelFilterAll {
 
 	public Page<PKPersonnel> getPersonnelsByFilter(PersonnelFilter personnelFilter, int size, int page) {
 		log.info("Begin getPersonnels input : [PersonnelFilter : CIN : {} NOM : {} PRENOM : {} POSTE : {} ] ",
-				personnelFilter.getCin(), personnelFilter.getSNom(), personnelFilter.getSPrenom(),
+				personnelFilter.getCin(), personnelFilter.getNom(), personnelFilter.getPrenom(),
 				personnelFilter.getSPoste());
 		Page<PKPersonnel> personnels = findCandidaciesByPersonnel(personnelFilter,
 				PageRequest.of(Integer.valueOf(page), Integer.valueOf(size)));

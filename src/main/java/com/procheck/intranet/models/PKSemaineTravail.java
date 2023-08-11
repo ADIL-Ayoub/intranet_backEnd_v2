@@ -8,15 +8,13 @@ import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "t_Semaine_travail", schema = "public")
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @Data @AllArgsConstructor @NoArgsConstructor
+@ToString
 public class PKSemaineTravail extends BaseEntity {
 	
 	@Column(name = "s_code_jour_travail")

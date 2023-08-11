@@ -14,6 +14,7 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
 
+import com.procheck.intranet.services.specifications.MailSenderService;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -199,6 +200,8 @@ public class IntranetApplication implements CommandLineRunner {
 				.createPrivilegeIfNotFound("PERSONNEL - affectation superieur hiérarchique", "affectation_superieur");
 		PKPrivilege p93 = privilegeService
 				.createPrivilegeIfNotFound("PERSONNEL - affectation super employee ", "affectation_super_emp");
+		PKPrivilege p97 = privilegeService
+				.createPrivilegeIfNotFound("PERSONNEL - afficher employes par superieur ", "afficher_emp_by_sup");
 
 		
 		/*** TYPE CONGE **/
@@ -287,7 +290,12 @@ public class IntranetApplication implements CommandLineRunner {
 		PKPrivilege p87 = privilegeService.createPrivilegeIfNotFound("DEMANDE - decision superieur hiérarchique ", "decision_conge");
 		PKPrivilege p88 = privilegeService.createPrivilegeIfNotFound("DEMANDE - demandes superieur hiérarchique by filter ", "find_demand_by_filter");
 		PKPrivilege p89 = privilegeService.createPrivilegeIfNotFound("DEMANDE - demande modification conge valider ", "demande_modifier_conge");
-		
+		//mon code
+		PKPrivilege p94 = privilegeService.createPrivilegeIfNotFound("DEMANDE - demande  conge par superieur ", "demande_conge_by_superieur");
+		PKPrivilege p95 = privilegeService.createPrivilegeIfNotFound("DEMANDE - find demande   ", "find_demande_conge");
+
+		/***TYPE DEMANDE***/
+		PKPrivilege p96 = privilegeService.createPrivilegeIfNotFound("DEMANDE - get type demande   ", "get_type_demande");
 		/*** CONGE **/
 		
 		PKPrivilege p84 = privilegeService.createPrivilegeIfNotFound("DEMANDE - affecher infos beneficiare conge", "find_infos_employee");
@@ -402,6 +410,12 @@ public class IntranetApplication implements CommandLineRunner {
 		listP.add(p91);
 		listP.add(p92);
 		listP.add(p93);
+		//mon code
+		listP.add(p94);
+		listP.add(p95);
+		listP.add(p96);
+		listP.add(p97);
+		//fin mon code
 		
 		listP.add(p001);
 		listP.add(p002);

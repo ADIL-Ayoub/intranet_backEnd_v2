@@ -15,16 +15,16 @@ public class PersonnelFilter {
 	
 	//public UUID idPersonnel;
 	public String cin;
-	public String sNom;
-	public String sPrenom;
+	public String nom;
+	public String prenom;
 	public String sPoste;
 	public Boolean affectation;
 	
 	
 	public PersonnelFilter(String cin, String nom, String prenom, String poste) {
 		this.cin=cin;
-		this.sNom=nom;
-		this.sPrenom=prenom;
+		this.nom =nom;
+		this.prenom =prenom;
 		this.sPoste=poste;
 
 	}

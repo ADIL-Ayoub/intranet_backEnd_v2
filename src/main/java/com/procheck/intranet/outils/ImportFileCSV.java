@@ -7,12 +7,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 import org.apache.commons.csv.CSVFormat;
@@ -182,7 +180,7 @@ public class ImportFileCSV {
 							personnel2.setService(service2);
 							
 							personnelService.save(personnel2);
-							log.info("update personne :"+ personnel2.getSNom()+" : "+i);
+							log.info("update personne :"+ personnel2.getNom()+" : "+i);
 						
 						
 						}else {
@@ -194,7 +192,7 @@ public class ImportFileCSV {
 							personnel.setSSociete(societe);
 							personnel.setService(service2);
 							personnelService.save(personnel);
-							log.info("insert personne :"+ personnel.getSNom()+" : "+i);
+							log.info("insert personne :"+ personnel.getNom()+" : "+i);
 							
 						}
 						
@@ -285,7 +283,7 @@ public class ImportFileCSV {
 								
 								
 								personnelService.save(personnel2);
-								log.info("update personne :"+ personnel2.getSNom()+" : "+i);
+								log.info("update personne :"+ personnel2.getNom()+" : "+i);
 							
 							}else {
 								personnel.setBAffectation(false);
@@ -296,7 +294,7 @@ public class ImportFileCSV {
 								personnel.setSSociete(societe.toUpperCase());
 								personnel.setService(service2);
 								personnelService.save(personnel);
-								log.info("insert personne :"+ personnel.getSNom()+" : "+i);
+								log.info("insert personne :"+ personnel.getNom()+" : "+i);
 								
 							}	
 						}
@@ -319,8 +317,8 @@ public class ImportFileCSV {
 		PKPersonnel personnel=new PKPersonnel();
 		personnel.setSMatruculePaie(metadata[0].trim());
 		personnel.setSCivilite(metadata[1].trim());
-		personnel.setSNom(metadata[2].trim().toUpperCase());
-		personnel.setSPrenom(metadata[3].trim().toUpperCase());
+		personnel.setNom(metadata[2].trim().toUpperCase());
+		personnel.setPrenom(metadata[3].trim().toUpperCase());
 		personnel.setSAdresse1(metadata[4].trim());
 		personnel.setSAdresse2(metadata[5].trim());
 		personnel.setSCodePostal(metadata[6].trim());

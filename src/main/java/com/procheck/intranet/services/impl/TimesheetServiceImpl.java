@@ -1,15 +1,12 @@
 package com.procheck.intranet.services.impl;
 
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -501,13 +498,13 @@ public class TimesheetServiceImpl implements ITimesheetService {
 		LocalDate ldate = LocalDate.now();
 		modifierTs.setDateDemande(ldate);
 		PKUser user = userService.findOne(idUser);
-		modifierTs.setDemandeur(user.getPersonnel().getSNom());
+		modifierTs.setDemandeur(user.getPersonnel().getNom());
 //		UUID code=UUID.fromString(service.getCodeResponsable().replace("R",null));
 		PKPersonnel personnel = personnelReporsitory.getOne(service.getCodeResponsable());
 		modifierTs.setRecepteur(personnel.getUser().getId());
 		modifierTs.setTypeDemande("Modification TS");
 		modifierTs.setStatus("en cours");
-		modifierTs.setEmployee(timesheet.getPersonnel().getSNom() + " " + timesheet.getPersonnel().getSPrenom());
+		modifierTs.setEmployee(timesheet.getPersonnel().getNom() + " " + timesheet.getPersonnel().getPrenom());
 		modifierTs.setDateTS(timesheet.getDateTimesheet());
 		modifierTs.setTimesheet(timesheet);
 
@@ -561,8 +558,8 @@ public class TimesheetServiceImpl implements ITimesheetService {
 			PKService service = serviceService.findServiceById(dmdMo.getTimesheet().getService());
 			mod.setService(service.getNameService());
 			mod.setSuperviseur(dmdMo.getDemandeur());
-			mod.setEmployee(dmdMo.getTimesheet().getPersonnel().getSNom() + " "
-					+ dmdMo.getTimesheet().getPersonnel().getSPrenom());
+			mod.setEmployee(dmdMo.getTimesheet().getPersonnel().getNom() + " "
+					+ dmdMo.getTimesheet().getPersonnel().getPrenom());
 			mod.setStatus(dmdMo.getStatus());
 			lists.add(mod);
 		}

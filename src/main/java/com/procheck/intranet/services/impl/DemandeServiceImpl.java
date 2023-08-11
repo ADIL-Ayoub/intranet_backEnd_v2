@@ -84,5 +84,12 @@ public class DemandeServiceImpl implements IDemandeService{
 		log.info("[ DEMANDE SERVICE ] ~ [ FIND DEMANDE BY FILTER ]");
 		return demandeSpec.getDemandsByFilter(filter);
 	}
-	
+
+	@Override
+	public List<PKDemande> findByCodeSup(UUID codeSup) {
+		log.info("[ DEMANDE SERVICE ] ~ [ FIND DEMANDES BY CODE SUP ]");
+		return demandeReporsitory.findAllByCodeSup(codeSup);
+
+	}
+
 }

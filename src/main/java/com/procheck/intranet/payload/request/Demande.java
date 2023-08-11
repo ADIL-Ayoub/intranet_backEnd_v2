@@ -4,9 +4,11 @@ import java.util.UUID;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
+@ToString
 public class Demande {
 	
 	public UUID idDemande;

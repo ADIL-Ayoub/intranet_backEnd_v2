@@ -58,7 +58,7 @@ public class ServiceSyncroConge {
 		
 		for (PKConge conge : congesReprise) {
 
-			log.info(conge.getDemande().getPersonnel().getSNom()+" : conge "+ conge.getName() +" est close ");
+			log.info(conge.getDemande().getPersonnel().getNom()+" : conge "+ conge.getName() +" est close ");
 				conge.setStatus("closé");
 				congeService.save(conge);
 				conge.getDemande().setStatus("closé");
@@ -69,7 +69,7 @@ public class ServiceSyncroConge {
 		if(!Objects.equals(congesDebut, null)) {
 			
 			for (PKConge conge : congesDebut) {
-				log.info(conge.getDemande().getPersonnel().getSNom()+" : conge "+ conge.getName() +" est valide ");
+				log.info(conge.getDemande().getPersonnel().getNom()+" : conge "+ conge.getName() +" est valide ");
 				
 				long numOfDaysBetween = ChronoUnit.DAYS.between(conge.getDateDebut(), conge.getDateReprise());
 				 List<LocalDate> dates=IntStream.iterate(0, i -> i + 1).limit(numOfDaysBetween).mapToObj(i -> conge.getDateDebut().plusDays(i))

@@ -11,10 +11,7 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "t_type_demande", schema = "public")
@@ -22,6 +19,7 @@ import lombok.NoArgsConstructor;
 @Data 
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class PKTypeDemande extends BaseEntity {
 	
 	@Column(name = "s_Type_Demande")

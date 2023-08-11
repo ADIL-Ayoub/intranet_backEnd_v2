@@ -10,10 +10,7 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.Collection;
 import java.util.List;
@@ -22,6 +19,7 @@ import java.util.List;
 @Table(name = "t_pays", schema = "public")
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @Data @AllArgsConstructor @NoArgsConstructor
+@ToString
 public class PKPays  extends BaseEntity{
 
 	@Column(name = "s_code_pays", unique = true, nullable = false)
