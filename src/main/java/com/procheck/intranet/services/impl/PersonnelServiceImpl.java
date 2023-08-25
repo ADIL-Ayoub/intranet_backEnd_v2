@@ -5,9 +5,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
+import com.procheck.intranet.payload.request.MesConges;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -273,7 +276,10 @@ public class PersonnelServiceImpl implements IPersonnelService {
 		log.info("[ PERSONNEL SERVICE ] ~ [ FIND PERSONNELS BY CIN OR NAME OR PRENOM ALL]");
 
 		Page<PKPersonnel> personnels = personnelSpecAll.getPersonnelsByFilter(personnel, size, page);
-
+		//List<PKPersonnel> list= personnelReporsitory.findPersonnelByFilterAll(personnel.cin,personnel.nom,personnel.prenom,personnel.sPoste);
+		//Page<PKPersonnel> personnels=new PageImpl<PKPersonnel>(list,PageRequest.of(page,size),list.size());
+		//<MesConges> pages = new PageImpl<MesConges>(listHolder.getPageList(),
+				//PageRequest.of(listHolder.getPage(), listHolder.getPageSize()), conges.size());
 		return personnels;
 	}
 
@@ -286,6 +292,8 @@ public class PersonnelServiceImpl implements IPersonnelService {
 		personnelReporsitory.save(personnel);
 		
 	}
+
+	//mon code
 
 	@Override
 	public List<PKPersonnel> findPersonnelByCodeSuperieur(UUID codeSuperieur) {

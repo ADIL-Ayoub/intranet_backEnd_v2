@@ -5,14 +5,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import javax.persistence.EntityManager;
-
-import javax.persistence.criteria.CriteriaBuilder;
-
-import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -46,20 +40,20 @@ public class PersonnelSpecByService {
 			if (personnel.getCin() != null && !personnel.getCin().isEmpty()) {
 				predicates.add(criteriaBuilder.equal(root.get("cin"), personnel.getCin()));
 			}
-			if (personnel.getSNom() != null && !personnel.getSNom().isEmpty()) {
-				predicates.add(criteriaBuilder.equal(root.get("sNom"), personnel.getSNom()));
+			if (personnel.getNom() != null && !personnel.getNom().isEmpty()) {
+				predicates.add(criteriaBuilder.equal(root.get("nom"), personnel.getNom()));
 			}
-			if (personnel.getSPrenom() != null && !personnel.getSPrenom().isEmpty()) {
-				predicates.add(criteriaBuilder.equal(root.get("sPrenom"), personnel.getSPrenom()));
+			if (personnel.getPrenom() != null && !personnel.getPrenom().isEmpty()) {
+				predicates.add(criteriaBuilder.equal(root.get("prenom"), personnel.getPrenom()));
 			}
-			if (personnel.getSMatruculePaie() != null && !personnel.getSMatruculePaie().isEmpty()) {
-				predicates.add(criteriaBuilder.equal(root.get("sMatruculePaie"), personnel.getSMatruculePaie()));
+			if (personnel.getMatruculePaie() != null && !personnel.getMatruculePaie().isEmpty()) {
+				predicates.add(criteriaBuilder.equal(root.get("matruculePaie"), personnel.getMatruculePaie()));
 			}
-			if (personnel.getSPoste() != null && !personnel.getSPoste().isEmpty()) {
-				predicates.add(criteriaBuilder.equal(root.get("sPoste"), personnel.getSPoste()));
+			if (personnel.getPoste() != null && !personnel.getPoste().isEmpty()) {
+				predicates.add(criteriaBuilder.equal(root.get("poste"), personnel.getPoste()));
 			}
-			if (!Objects.isNull(personnel.getBProjetTs())) {
-				predicates.add(criteriaBuilder.equal(root.get("bProjetTs"), personnel.bProjetTs));
+			if (!Objects.isNull(personnel.getProjetTs())) {
+				predicates.add(criteriaBuilder.equal(root.get("projetTs"), personnel.projetTs));
 			}
 
 			criteriaQuery.orderBy(criteriaBuilder.desc(root.get("service")));
@@ -80,8 +74,8 @@ public class PersonnelSpecByService {
 	public List<PKPersonnel> getPersonnelsByFilter(PersonnelFilterByService personnelFilter) {
 		log.info(
 				"Begin getPersonnels input : [PersonnelFilter :SERVICE : {} CIN : {} NOM : {} PRENOM : {} Matrucule : {} Post :{}] ",
-				personnelFilter.getIdServices(), personnelFilter.getCin(), personnelFilter.getSNom(),
-				personnelFilter.getSPrenom(), personnelFilter.getSMatruculePaie(), personnelFilter.getSPoste());
+				personnelFilter.getIdServices(), personnelFilter.getCin(), personnelFilter.getNom(),
+				personnelFilter.getPrenom(), personnelFilter.getMatruculePaie(), personnelFilter.getPoste());
 		List<PKPersonnel> personnels = findCandidaciesByPersonnel(personnelFilter);
 		log.info("End getPersonnels input   : [PersonnelFilter : count : {} ]  ", personnels.size());
 		return personnels;

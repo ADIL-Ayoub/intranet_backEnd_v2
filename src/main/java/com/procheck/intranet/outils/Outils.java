@@ -228,8 +228,8 @@ public class Outils {
 
 	public static List<LocalDate> getDatesBetweenConge(String dateD, String dateF) {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-		LocalDate startDate = LocalDate.parse(dateD, formatter).plusDays(1);
-		LocalDate endDate = LocalDate.parse(dateF, formatter).plusDays(1);
+		LocalDate startDate = LocalDate.parse(dateD, formatter);
+		LocalDate endDate = LocalDate.parse(dateF, formatter);
 		long numOfDaysBetween = ChronoUnit.DAYS.between(startDate, endDate);
 		return IntStream.iterate(0, i -> i + 1).limit(numOfDaysBetween).mapToObj(i -> startDate.plusDays(i))
 				.collect(Collectors.toList());

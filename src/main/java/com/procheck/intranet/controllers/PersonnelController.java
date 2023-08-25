@@ -117,7 +117,7 @@ public class PersonnelController {
 
 		try {
 			
-			PersonnelFilter personne=new PersonnelFilter(cin.toUpperCase(),nom.toUpperCase(),prenom.toUpperCase(),poste.toUpperCase());
+			PersonnelFilter personne=new PersonnelFilter(cin.toUpperCase() 	,nom.toUpperCase(),prenom.toUpperCase(),poste.toUpperCase());
 			
 			Page<PKPersonnel> personnels = personnelService.findPersonnelByFilterAll(personne, size,page);
 

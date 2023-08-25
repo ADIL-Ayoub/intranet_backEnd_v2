@@ -210,8 +210,8 @@ public class DemandeController {
 			//System.out.println(conge);
 
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-			LocalDate startDate = LocalDate.parse(conge.getDateDebut().substring(0,10), formatter).plusDays(1);
-			LocalDate finDate = LocalDate.parse(conge.getDateReprise().substring(0,10), formatter).plusDays(1);
+			LocalDate startDate = LocalDate.parse(conge.getDateDebut().substring(0,10), formatter);
+			LocalDate finDate = LocalDate.parse(conge.getDateReprise().substring(0,10), formatter);
 			PKUser user = userService.findOne(idUser);
 			PKPersonnel employee = user.getPersonnel();
 			//ihistoriqueService.SaveHistorique(idUser," Ajouter demande congé "+employee.getSNom());
@@ -244,6 +244,9 @@ public class DemandeController {
 				if (!jourferie && jourTravail) {
 					daysConge.add(date);
 				}
+			}
+			if(daysConge.size()<1){
+				return ResponseEntity.badRequest().body(new MessageResponse("Vous avez choisie des jours fériés"));
 			}
 			if (!(employee.getFNbJourConge() > daysConge.size())) {
 				return ResponseEntity.badRequest().body(new MessageResponse("Error: solde conge "
@@ -874,6 +877,9 @@ public class DemandeController {
 					daysConge.add(date);
 				}
 			}
+			if(daysConge.size()<1){
+				return ResponseEntity.badRequest().body(new MessageResponse("Vous avez choisie des jours fériés"));
+			}
 			if (!(employee.getFNbJourConge() > daysConge.size())) {
 
 				return ResponseEntity.badRequest().body(new MessageResponse("Error: solde conge "
@@ -892,7 +898,7 @@ public class DemandeController {
 			for (PKConge cng : demande.getConges()) {
 
 				cng.setDateDebut(startDate);
-				cng.setDateReprise(finDate.plusDays(1));
+				cng.setDateReprise(finDate);
 				cng.setTypeConge(typeConge);
 				cng.setNombreJour(daysConge.size());
 
@@ -1463,6 +1469,9 @@ public ResponseEntity<?> findMesDemande(@PathVariable("idUser") UUID idUser,
 				if (!jourferie && jourTravail) {
 					daysConge.add(date);
 				}
+			}
+			if(daysConge.size()<1){
+				return ResponseEntity.badRequest().body(new MessageResponse("Vous avez choisie des jours fériés"));
 			}
 			if (!(employee.getFNbJourConge() > daysConge.size())) {
 				return ResponseEntity.badRequest().body(new MessageResponse("Error: solde conge "

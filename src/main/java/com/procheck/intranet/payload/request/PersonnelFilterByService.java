@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.UUID;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,9 +14,9 @@ public class PersonnelFilterByService {
 	
 	public List<UUID> idServices;
 	public String cin;
-	public String sNom;
-	public String sPrenom;
-	public String sMatruculePaie;
-	public String sPoste;
-	public Boolean bProjetTs;
+	public String nom;
+	public String prenom;
+	public String matruculePaie;
+	public String poste;
+	public Boolean projetTs;
 }

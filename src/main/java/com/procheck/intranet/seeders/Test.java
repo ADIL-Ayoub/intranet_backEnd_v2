@@ -8,7 +8,7 @@ import org.springframework.boot.CommandLineRunner;
 @Slf4j
 public class Test  {
 
-    private MailSenderService mailSenderService=new MailSenderService();
+    
 
 
 }

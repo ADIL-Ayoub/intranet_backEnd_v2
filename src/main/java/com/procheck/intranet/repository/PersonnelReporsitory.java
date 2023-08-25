@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.procheck.intranet.models.PKPrivilege;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -35,6 +36,12 @@ public interface PersonnelReporsitory extends JpaRepository<PKPersonnel, UUID>,J
 			"OR p.prenom LIKE '%' || UPPER(:sPrenom) || '%' OR p.prenom LIKE '%' || lower(:sPrenom) || '%' " +
 			"OR p.cin LIKE '%' || UPPER( :cin || '%') OR p.cin LIKE '%' || lower( :cin || '%') )")
 	List<PKPersonnel> findBySuperieurAndNomOrPrenomOrCin(UUID superieur, String sNom, String sPrenom, String cin);
+
+	@Query("FROM PKPersonnel p WHERE  (p.nom LIKE '%' || UPPER( :sNom )|| '%' OR p.nom LIKE '%' || LOWER( :sNom ) || '%' " +
+			"OR p.prenom LIKE '%' || UPPER(:sPrenom) || '%' OR p.prenom LIKE '%' || lower(:sPrenom) || '%' " +
+			"OR p.cin LIKE '%' || UPPER( :cin || '%') OR p.cin LIKE '%' || lower( :cin || '%') )"+
+			"OR p.sPoste LIKE '%' || UPPER( :poste || '%') OR p.sPoste LIKE '%' || lower( :poste || '%') ")
+	List<PKPersonnel> findPersonnelByFilterAll(String cin,String sNom,String sPrenom,String poste);
 
 	
 	
